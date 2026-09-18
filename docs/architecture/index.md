@@ -1,14 +1,20 @@
-# toyDB Architecture
+# toyDB Architecture（toyDB 架构）
 
 toyDB is a simple distributed SQL database, intended to illustrate how such systems are built. The
 overall structure is similar to real-world distributed databases, but the design and implementation
 has been kept as simple as possible for understandability. Performance and scalability are explicit
 non-goals, as these are major sources of complexity in real-world systems.
 
+toyDB 是一个简单的分布式 SQL 数据库，旨在说明这类系统是如何构建的。其整体结构与真实世界的分布式数据库类似，但为了易于理解，设计和实现都尽可能保持简单。性能和可扩展性被明确列为非目标，因为它们是真实系统中复杂性的主要来源。
+
 This guide will walk through toyDB's architecture and code from the bottom up, with plenty of links
 to the actual source code.
 
+本指南将自底向上地介绍 toyDB 的架构与代码，并包含大量指向实际源码的链接。
+
 > ℹ️ View on GitHub with a desktop browser for inline code listings.
+
+> ℹ️ 请用桌面浏览器在 GitHub 上查看，以获得内联的代码列表。
 
 * [Overview](overview.md)
   * [Properties](overview.md#properties)

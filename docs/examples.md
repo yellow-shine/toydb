@@ -1,7 +1,9 @@
-# SQL Examples
+# SQL Examples（SQL 示例）
 
 The following examples demonstrate some of toyDB's SQL features. For more details, see the
 [SQL reference](sql.md).
+
+以下示例演示了 toyDB 的一部分 SQL 功能。更多细节请参阅 [SQL 参考手册](sql.md)。
 
 - [Setup](#setup)
 - [Creating Tables and Data](#creating-tables-and-data)
@@ -14,10 +16,12 @@ The following examples demonstrate some of toyDB's SQL features. For more detail
 - [Transactions](#transactions)
 - [Time-Travel Queries](#time-travel-queries)
 
-## Setup
+## Setup（环境搭建）
 
 To start a five-node cluster on the local machine (requires a working
 [Rust compiler](https://www.rust-lang.org/tools/install)), run:
+
+在本地机器上启动一个五节点集群（需要可用的 [Rust 编译器](https://www.rust-lang.org/tools/install)），运行：
 
 ```
 $ ./cluster/run.sh
@@ -31,6 +35,8 @@ toydb4 19:06:29 [ INFO] Won election for term 1, becoming leader
 ```
 
 In a separate terminal, start a `toysql` client and check the server status:
+
+在另一个终端中，启动一个 `toysql` 客户端并查看服务器状态：
 
 ```
 $ cargo run --release --bin toysql
@@ -46,10 +52,14 @@ SQL txns:  0 active, 0 total (bitcask storage)
 The cluster is shut down by pressing Ctrl-C. Data is saved under `clusters/toydb-?/data/`,
 delete the contents to start over.
 
-## Creating Tables and Data
+按 Ctrl-C 即可关闭集群。数据保存在 `clusters/toydb-?/data/` 目录下，删除其中的内容即可重新开始。
+
+## Creating Tables and Data（创建表和数据）
 
 As a basis for later examples, we'll create a small movie database. The following SQL statements
 can be pasted into `toysql`:
+
+作为后续示例的基础，我们先创建一个小型电影数据库。可以把下面的 SQL 语句粘贴到 `toysql` 中执行：
 
 ```sql
 CREATE TABLE genres (
@@ -100,7 +110,11 @@ toyDB supports some basic datatypes, as well as primary keys, foreign keys, and 
 For more information on these, see the [SQL reference](sql.md). Schema changes such as
 `ALTER TABLE` are not supported, only `CREATE TABLE` and `DROP TABLE`.
 
+toyDB 支持一些基本数据类型，以及主键、外键和列索引。更多信息请参阅 [SQL 参考手册](sql.md)。不支持 `ALTER TABLE` 之类的模式变更，只支持 `CREATE TABLE` 和 `DROP TABLE`。
+
 The tables can be inspected via the `!tables` and `!table` commands:
+
+可以通过 `!tables` 和 `!table` 命令查看表：
 
 ```sql
 toydb> !tables
@@ -115,9 +129,11 @@ CREATE TABLE genres (
 )
 ```
 
-## Constraints and Referential Integrity
+## Constraints and Referential Integrity（约束与引用完整性）
 
 Schemas enforce referential integrity and other constraints:
+
+模式（schema）会强制执行引用完整性及其他约束：
 
 ```sql
 toydb> DROP TABLE studios;
@@ -139,9 +155,11 @@ toydb> INSERT INTO movies VALUES (13, 'Nebraska', 'Unknown', 3, 2013, 7.7);
 Error: Invalid datatype STRING for INTEGER column studio_id
 ```
 
-## Basic SQL Queries
+## Basic SQL Queries（基本 SQL 查询）
 
 Most basic SQL query functionality is supported:
+
+支持大部分基本的 SQL 查询功能：
 
 ```sql
 toydb> SELECT * FROM studios;
@@ -159,6 +177,8 @@ Gravity|7.7
 
 Column headers can be enabled with `!headers on`:
 
+可以用 `!headers on` 开启列标题显示：
+
 ```sql
 toydb> !headers on
 Headers enabled
@@ -171,9 +191,11 @@ id|genre
 4|Comedy
 ```
 
-## Expressions
+## Expressions（表达式）
 
 All common mathematical operators are implemented:
+
+所有常见的数学运算符都已实现：
 
 ```sql
 toydb> SELECT 1 + 2 * 3;
@@ -187,6 +209,8 @@ SELECT 3! + 7 % 4 - 2 ^ 3;
 ```
 
 64-bit floating point arithmetic is also supported, including infinity and NaN:
+
+也支持 64 位浮点运算，包括无穷大（infinity）和 NaN：
 
 ```sql
 toydb> SELECT 3.14 * 2.718;
@@ -204,6 +228,8 @@ toydb> SELECT 1e10 ^ 8 / INFINITY, 1e10 ^ 1e10, INFINITY / INFINITY;
 
 And of course three-valued logic:
 
+当然还有三值逻辑：
+
 ```sql
 toydb> SELECT TRUE AND TRUE, TRUE AND FALSE, TRUE AND NULL, FALSE AND NULL;
 TRUE|FALSE|NULL|FALSE
@@ -217,6 +243,8 @@ FALSE|TRUE|NULL
 
 Which would be useless without comparison operators for all types:
 
+如果没有针对所有类型的比较运算符，这些就毫无用处：
+
 ```sql
 toydb> SELECT 3 > 1, 3 <= 1, 3 = 3.0;
 TRUE|FALSE|TRUE
@@ -228,10 +256,12 @@ toydb> SELECT INFINITY > -INFINITY, NULL = NULL;
 TRUE|NULL
 ```
 
-## Joins
+## Joins（连接）
 
 No SQL database would be complete without joins, and toyDB supports most join types such as
 inner joins (both implicit and explicit):
+
+没有连接（join）的 SQL 数据库是不完整的。toyDB 支持大多数连接类型，例如内连接（隐式和显式均可）：
 
 ```sql
 toydb> SELECT m.id, m.title, g.name FROM movies m JOIN genres g ON m.genre_id = g.id LIMIT 4;
@@ -248,6 +278,8 @@ toydb> SELECT m.id, m.title, g.name FROM movies m, genres g WHERE m.genre_id = g
 ```
 
 Left and right outer joins:
+
+左外连接和右外连接：
 
 ```sql
 toydb> SELECT s.id, s.name, g.name FROM studios s LEFT JOIN genres g ON s.id = g.id;
@@ -267,6 +299,8 @@ NULL|NULL|Focus Features
 
 And cross joins (both implicit and explicit):
 
+以及交叉连接（隐式和显式均可）：
+
 ```sql
 toydb> SELECT g.name, s.name FROM genres g, studios s WHERE s.name < 'S';
 Science Fiction|Mosfilm
@@ -285,6 +319,8 @@ Comedy|Focus Features
 
 We can join on arbitrary predicates, such as joining movies with any genres whose name is
 ordered after the movie's title:
+
+我们可以基于任意谓词进行连接，例如将电影与那些名称按字典序排在电影标题之后的类型相连接：
 
 ```sql
 toydb>  SELECT   m.title, g.name
@@ -307,8 +343,10 @@ Primer|Science Fiction
 ```
 
 And we can join multiple tables, even using the same table multiple times - like in this example
-where we find all science fiction movies released since 2000 by studios that have released any 
+where we find all science fiction movies released since 2000 by studios that have released any
 movie rated 8 or higher:
+
+我们还可以连接多张表，甚至多次使用同一张表——比如这个例子：查找 2000 年以来上映的科幻电影，且其出品公司曾发行过任何评分达到 8 分或以上的电影：
 
 ```sql
 toydb> SELECT   m.id, m.title, g.name AS genre, m.released, s.name AS studio
@@ -322,10 +360,12 @@ toydb> SELECT   m.id, m.title, g.name AS genre, m.released, s.name AS studio
 5|The Fountain|Science Fiction|2006|Warner Bros
 ```
 
-## Explain
+## Explain（执行计划）
 
 When optimizing complex queries with several joins, it can often be useful to inspect the query
 plan via an `EXPLAIN` query:
+
+在优化包含多个连接的复杂查询时，通过 `EXPLAIN` 查询查看查询计划往往很有用：
 
 ```sql
 toydb> EXPLAIN
@@ -353,9 +393,13 @@ does full table scans of `studios` and `movies` (to find the good movies) and jo
 the `rating >= 8` filter down to the `movies` table scan. The results of these two joins are also
 joined to produce the final result, which is then formatted and sorted.
 
-## Aggregates
+在这里可以看到，规划器（planner）对 `genres` 做了主键查找，对 `movies.genre_id` 做了索引查找，然后按上映年份过滤所得的电影并进行连接。它还对 `studios` 和 `movies`（用于找出好电影）做了全表扫描并将它们连接起来，同时把 `rating >= 8` 过滤条件下推到 `movies` 的表扫描中。这两个连接的结果再进行一次连接以产生最终结果，最后进行格式化和排序。
+
+## Aggregates（聚合）
 
 Most basic aggregate functions are supported:
+
+支持大部分基本的聚合函数：
 
 ```sql
 toydb> SELECT COUNT(*), MIN(rating), MAX(rating), AVG(rating), SUM(rating) FROM movies;
@@ -363,6 +407,8 @@ toydb> SELECT COUNT(*), MIN(rating), MAX(rating), AVG(rating), SUM(rating) FROM 
 ```
 
 We can group by values and filter the aggregate results:
+
+我们可以按值分组并过滤聚合结果：
 
 ```sql
 toydb> SELECT s.id, s.name, AVG(m.rating) AS average
@@ -377,6 +423,8 @@ toydb> SELECT s.id, s.name, AVG(m.rating) AS average
 
 And we can combine aggregate functions with arbitrary expressions, both inside and outside:
 
+聚合函数还可以与任意表达式组合，无论在函数内部还是外部：
+
 ```sql
 toydb> SELECT s.id, s.name, ((MAX(rating^2) - MIN(rating^2)) / AVG(rating^2)) ^ (0.5) AS spread
        FROM movies m JOIN studios s ON m.studio_id = s.id
@@ -387,12 +435,14 @@ toydb> SELECT s.id, s.name, ((MAX(rating^2) - MIN(rating^2)) / AVG(rating^2)) ^ 
 5|Focus Features|0.39194971607693424
 ```
 
-## Transactions
+## Transactions（事务）
 
 toyDB supports ACID transactions via MVCC-based snapshot isolation. This provides atomic
 transactions with good isolation, without taking out locks or blocking reads on writes. As a basic
 example, the below transaction is rolled back without taking effect, as opposed to `COMMIT`
 which would make it permanent:
+
+toyDB 通过基于 MVCC 的快照隔离（snapshot isolation）支持 ACID 事务。这提供了具有良好隔离性的原子事务，无需加锁，也不会因写入而阻塞读取。举个基本例子：下面的事务被回滚且未生效；与之相对，`COMMIT` 会使其永久生效：
 
 ```sql
 toydb> BEGIN;
@@ -420,7 +470,11 @@ concurrent sessions, and show how toyDB prevents these anomalies in all cases bu
 examples, the left half is user A and the right is user B. Time flows downwards such that
 commands on the same line happen at the same time.
 
+下面用两个并发会话演示最常见的事务异常，并展示 toyDB 如何在除一种情况外的所有情况下防止这些异常。在这些示例中，左半边是用户 A，右半边是用户 B。时间自上而下流动，同一行上的命令是同时发生的。
+
 **Dirty write:** an uncommitted write by A should not be affected by a concurrent B write.
+
+**脏写（dirty write）：**A 未提交的写入不应受 B 并发写入的影响。
 
 ```sql
 a> BEGIN;
@@ -434,7 +488,11 @@ a> SELECT * FROM genres WHERE id = 5;
 The serialization failure here occurs because the first write always wins. This may not be an
 optimal strategy, but it is correct in terms of preventing serialization anomalies.
 
+这里出现序列化失败是因为第一个写入总是获胜。这未必是最优策略，但就防止序列化异常而言是正确的。
+
 **Dirty read:** an uncommitted write by A should not be visible to B until committed.
+
+**脏读（dirty read）：**A 未提交的写入在提交之前不应对 B 可见。
 
 ```sql
 a> BEGIN;
@@ -449,6 +507,8 @@ a> COMMIT;
 **Lost update:** when A and B both read a value, before updating it in turn, the first write should
 not be overwritten by the second.
 
+**丢失更新（lost update）：**当 A 和 B 先后读取同一个值、再依次更新时，第一个写入不应被第二个写入覆盖。
+
 ```sql
 a> BEGIN;                                         b> BEGIN;
 a> SELECT title, rating FROM movies WHERE id = 2; b> SELECT title, rating FROM movies WHERE id = 2;
@@ -459,8 +519,10 @@ a> UPDATE movies SET rating = 7.8 WHERE id = 2;
 a> COMMIT;
 ```
 
-**Fuzzy read:** B should not see a value suddenly change in its transaction, even if A commits a 
+**Fuzzy read:** B should not see a value suddenly change in its transaction, even if A commits a
 new value.
+
+**模糊读（fuzzy read）：**即使 A 提交了新值，B 也不应在其事务中看到某个值突然变化。
 
 ```sql
 a> BEGIN;                                         b> BEGIN;
@@ -476,8 +538,10 @@ a> COMMIT;
                                                   1|Scifi
 ```
 
-**Read skew:** if A reads two values, and B modifies the second value in between the reads, A 
+**Read skew:** if A reads two values, and B modifies the second value in between the reads, A
 should see the old second value.
+
+**读偏斜（read skew）：**如果 A 读取两个值，而 B 在两次读取之间修改了第二个值，A 应当仍看到旧的第二个值。
 
 ```sql
 a> BEGIN;
@@ -494,6 +558,8 @@ a> SELECT * FROM genres WHERE id = 3;
 **Phantom read:** when A runs a query with a predicate, and B commits a matching write, A should
 not see the write when rerunning it.
 
+**幻读（phantom read）：**当 A 用谓词执行一次查询，而 B 提交了一条匹配该谓词的写入时，A 重新运行查询时不应看到这条写入。
+
 ```sql
 a> BEGIN;
 a> SELECT * FROM genres WHERE id > 2;
@@ -508,6 +574,8 @@ a> SELECT * FROM genres WHERE id > 2;
 **Write skew:** when A reads row X and writes it to row Y, B should not concurrently be able to
 read row Y and write it to row X.
 
+**写偏斜（write skew）：**当 A 读取行 X 并将其写入行 Y 时，B 不应能并发地读取行 Y 并将其写入行 X。
+
 ```sql
 a> BEGIN;                                         b> BEGIN;
 a> SELECT * FROM genres WHERE id = 2;
@@ -519,16 +587,20 @@ a> UPDATE genres SET name = 'Action' WHERE id = 3;
 a> COMMIT;                                        b> COMMIT;
 ```
 
-Here, the writes actually go through. This anomaly is not protected against by snapshot isolation, 
-and thus not by toyDB either - doing so would require implementing serializable snapshot isolation. 
+Here, the writes actually go through. This anomaly is not protected against by snapshot isolation,
+and thus not by toyDB either - doing so would require implementing serializable snapshot isolation.
 However, this is the only common serialization anomaly not handled by toyDB, and is not among the
 most severe.
 
-## Time-Travel Queries
+在这个例子里，两个写入实际上都成功了。快照隔离并不能防范这种异常，toyDB 也一样——要做到这一点需要实现可串行化快照隔离（serializable snapshot isolation）。不过，这是 toyDB 未处理的唯一一种常见序列化异常，而且也不属于最严重的一类。
+
+## Time-Travel Queries（时间旅行查询）
 
 Since toyDB uses MVCC for transactions and keeps all historical versions, the state of the database
 can be queried at any arbitrary point in the past. toyDB uses incremental transaction IDs as
 logical timestamps:
+
+由于 toyDB 的事务使用 MVCC 并保留所有历史版本，因此可以查询数据库在过去任意时刻的状态。toyDB 使用递增的事务 ID 作为逻辑时间戳：
 
 ```sql
 toydb> SELECT * FROM genres;
